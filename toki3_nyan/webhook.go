@@ -65,12 +65,6 @@ func HandleTask(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	switch event.Type {
-	case "postback":
-	case "message":
-
-	}
-
 	log.Infof(c, "EventType: %s\nMessage: %#v", event.Type, event.Message)
 
 	m := getResponseMessage(event)

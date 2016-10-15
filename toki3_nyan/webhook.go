@@ -14,6 +14,8 @@ import (
 	"github.com/line/line-bot-sdk-go/linebot/httphandler"
 	"os"
 	"golang.org/x/net/context"
+	"google.golang.org/appengine/datastore"
+	"fmt"
 )
 
 var botHandler *httphandler.WebhookHandler
@@ -92,6 +94,15 @@ func HandleTask(w http.ResponseWriter, r *http.Request) {
 func handleEvent(bot *linebot.Client, context context.Context, event *linebot.Event) {
 	switch event.Type {
 	case linebot.EventTypeFollow:
+		onReceiveFollow(bot, context, event)
+		break
+	case linebot.EventTypeUnfollow:
+		break
+	case linebot.EventTypeJoin:
+		// 部屋に参加した
+		break
+	case linebot.EventTypeLeave:
+		// 部屋から離れた
 		break
 	case linebot.EventTypePostback:
 		onReceivePostBack(event.Postback.Data, bot, event.ReplyToken, context)
@@ -100,6 +111,43 @@ func handleEvent(bot *linebot.Client, context context.Context, event *linebot.Ev
 		onReceiveMessage(bot, context, event)
 		break
 	}
+}
+
+func onReceiveFollow(bot *linebot.Client, context context.Context, event *linebot.Event) {
+	senderProfile, err := bot.GetProfile(getId(event.Source)).Do()
+	if err != nil {
+		log.Errorf(context, "Error occurred at get sender profile. err: %v", err)
+		return
+	}
+
+	entity := subscriber{
+		DisplayName: senderProfile.DisplayName,
+		ID: senderProfile.UserID,
+	}
+
+	key := datastore.NewKey(context, subscriber_key, senderProfile.UserID, 0, nil)
+	if _, err := datastore.Put(context, key, &entity); err != nil {
+		log.Errorf(context, "Error occurred at put subcriber to datastore. err: %v", err)
+		return
+	}
+
+	text := fmt.Sprintf("よろしくだにゃん、げぼく「%s」", senderProfile.DisplayName)
+	message := linebot.NewTextMessage(text)
+
+	if _, err := bot.ReplyMessage(event.ReplyToken, message).WithContext(context).Do(); err != nil {
+		log.Errorf(context, "ReplayMessage: %v", err)
+		return
+	}
+}
+
+func getId(source *linebot.EventSource) string {
+	if source.Type == linebot.EventSourceTypeRoom {
+		return source.RoomID;
+	} else if source.Type == linebot.EventSourceTypeGroup {
+		return source.GroupID;
+	}
+
+	return source.UserID;
 }
 
 func onReceiveMessage(bot *linebot.Client, context context.Context, event *linebot.Event) {

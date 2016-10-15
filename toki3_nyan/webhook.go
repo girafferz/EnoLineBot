@@ -97,6 +97,7 @@ func handleEvent(bot *linebot.Client, context context.Context, event *linebot.Ev
 		onReceiveFollow(bot, context, event)
 		break
 	case linebot.EventTypeUnfollow:
+		onReceiveUnFollow(bot, context, event)
 		break
 	case linebot.EventTypeJoin:
 		// 部屋に参加した
@@ -136,6 +137,21 @@ func onReceiveFollow(bot *linebot.Client, context context.Context, event *linebo
 
 	if _, err := bot.ReplyMessage(event.ReplyToken, message).WithContext(context).Do(); err != nil {
 		log.Errorf(context, "ReplayMessage: %v", err)
+		return
+	}
+}
+
+func onReceiveUnFollow(bot *linebot.Client, context context.Context, event *linebot.Event) {
+	senderProfile, err := bot.GetProfile(getId(event.Source)).Do()
+	if err != nil {
+		log.Errorf(context, "Error occurred at get sender profile. err: %v", err)
+		return
+	}
+
+	//購読者を削除
+	key := datastore.NewKey(context, "Subscriber", senderProfile.UserID, 0, nil)
+	if err := datastore.Delete(context, key); err != nil {
+		log.Errorf(context, "Error occurred at delete subcriber to datastore. mid:%v, err: %v", err)
 		return
 	}
 }

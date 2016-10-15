@@ -1,0 +1,5 @@
+cron:
+- description: cron test
+  url: /cron
+  schedule: every day 23:00
+  timezone: Asia/Tokyo

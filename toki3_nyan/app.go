@@ -15,4 +15,5 @@ func init() {
 
 	http.Handle("/callback", GetBotHandler())
 	http.HandleFunc("/task", HandleTask)
+	http.HandleFunc("/cron", PushCron)
 }

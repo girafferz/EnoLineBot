@@ -13,6 +13,7 @@ import (
 	"google.golang.org/appengine/urlfetch"
 	"github.com/line/line-bot-sdk-go/linebot/httphandler"
 	"os"
+	"golang.org/x/net/context"
 )
 
 var botHandler *httphandler.WebhookHandler
@@ -83,35 +84,48 @@ func HandleTask(w http.ResponseWriter, r *http.Request) {
 
 	log.Infof(c, "EventType: %s\nMessage: %#v", event.Type, event.Message)
 
-	m := getResponseMessage(event)
-	if _, err = bot.ReplyMessage(event.ReplyToken, m).WithContext(c).Do(); err != nil {
-		log.Errorf(c, "ReplayMessage: %v", err)
-		return
-	}
+	handleEvent(bot, c, event)
 
 	w.WriteHeader(200)
 }
 
-func getResponseMessage(event *linebot.Event) linebot.Message {
+func handleEvent(bot *linebot.Client, context context.Context, event *linebot.Event) {
 	switch event.Type {
-	case "postback":
-		return onReceivePostBack(event.Postback.Data)
-	case "message":
-		switch message := event.Message.(type) {
-		case *linebot.TextMessage:
-			return onReceiveTextMessage(message.Text)
-		case *linebot.ImageMessage:
-			return linebot.NewTextMessage("画像だにゃん")
-		case *linebot.StickerMessage:
-			return linebot.NewTextMessage("スタンプだにゃん")
-		default:
-			return linebot.NewTextMessage("良くわかんないにゃん")
-		}
+	case linebot.EventTypeFollow:
+		break
+	case linebot.EventTypePostback:
+		onReceivePostBack(event.Postback.Data, bot, event.ReplyToken, context)
+		break
+	case linebot.EventTypeMessage:
+		onReceiveMessage(bot, context, event)
+		break
 	}
-	return linebot.NewTextMessage("良くわかんないにゃん")
 }
 
-func onReceiveTextMessage(text string) linebot.Message {
+func onReceiveMessage(bot *linebot.Client, context context.Context, event *linebot.Event) {
+	message := getMessageResponse(event)
+
+	if _, err := bot.ReplyMessage(event.ReplyToken, message).WithContext(context).Do(); err != nil {
+		log.Errorf(context, "ReplayMessage: %v", err)
+		return
+	}
+}
+
+func getMessageResponse(event *linebot.Event) linebot.Message {
+	switch message := event.Message.(type) {
+	case *linebot.TextMessage:
+		return getTextMessageResponse(message.Text)
+	case *linebot.ImageMessage:
+		return linebot.NewTextMessage("画像だにゃん")
+	case *linebot.StickerMessage:
+		return linebot.NewTextMessage("スタンプだにゃん")
+	default:
+		return linebot.NewTextMessage("良くわかんないにゃん")
+	}
+
+}
+
+func getTextMessageResponse(text string) linebot.Message {
 	switch text {
 	case "はらへ":
 		template := linebot.NewConfirmTemplate(
@@ -127,13 +141,20 @@ func onReceiveTextMessage(text string) linebot.Message {
 	}
 }
 
-func onReceivePostBack(data string) linebot.Message {
+func onReceivePostBack(data string, bot *linebot.Client, replyToken string, context context.Context) {
+	var message linebot.Message
+
 	switch data {
 	case "ramen":
-		return linebot.NewTextMessage("らーめん探すにゃん")
+		message = linebot.NewTextMessage("らーめん探すにゃん")
 	case "beer":
-		return linebot.NewTextMessage("ビール探すにゃん")
+		message = linebot.NewTextMessage("ビール探すにゃん")
 	default:
-		return linebot.NewTextMessage("良くわかんないにゃん")
+		message = linebot.NewTextMessage("良くわかんないにゃん")
+	}
+
+	if _, err := bot.ReplyMessage(replyToken, message).WithContext(context).Do(); err != nil {
+		log.Errorf(context, "ReplayMessage: %v", err)
+		return
 	}
 }

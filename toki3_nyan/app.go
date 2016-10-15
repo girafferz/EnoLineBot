@@ -2,8 +2,6 @@ package main
 
 import (
 	"github.com/joho/godotenv"
-	"github.com/line/line-bot-sdk-go/linebot/httphandler"
-	"os"
 	"net/http"
 )
 
@@ -13,14 +11,8 @@ func init() {
 		panic(err)
 	}
 
-	botHandler, err := httphandler.New(
-		os.Getenv("LINE_BOT_CHANNEL_SECRET"),
-		os.Getenv("LINE_BOT_CHANNEL_TOKEN"),
-	)
-	botHandler.HandleEvents(HandleCallback)
+	InitWebHook()
 
-	SetBotHandler(botHandler)
-
-	http.Handle("/callback", botHandler)
+	http.Handle("/callback", GetBotHandler())
 	http.HandleFunc("/task", HandleTask)
 }

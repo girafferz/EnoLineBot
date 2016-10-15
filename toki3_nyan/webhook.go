@@ -12,12 +12,28 @@ import (
 	"google.golang.org/appengine/log"
 	"google.golang.org/appengine/urlfetch"
 	"github.com/line/line-bot-sdk-go/linebot/httphandler"
+	"os"
 )
 
 var botHandler *httphandler.WebhookHandler
 
-func SetBotHandler(aBotHandler *httphandler.WebhookHandler) {
-	botHandler = aBotHandler
+func InitWebHook() {
+	var err error
+	botHandler, err = httphandler.New(
+		os.Getenv("LINE_BOT_CHANNEL_SECRET"),
+		os.Getenv("LINE_BOT_CHANNEL_TOKEN"),
+	)
+
+	if err != nil {
+		panic(err)
+		return
+	}
+
+	botHandler.HandleEvents(HandleCallback)
+}
+
+func GetBotHandler() *httphandler.WebhookHandler {
+	return botHandler
 }
 
 // Webhook を受け取って TaskQueueに詰める関数

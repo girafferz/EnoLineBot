@@ -46,7 +46,7 @@ func onReceivePostBack(event *linebot.Event, bot *linebot.Client, context contex
 		if err := updateSubscriber(context, profile, action_search_ramen); err != nil {
 			return
 		}
-		message = linebot.NewTextMessage("探したい場所を10分以内に教えてにゃん")
+		message = linebot.NewTextMessage("探したい場所を10分以内に教えてにゃん。＋ボタンを押したら出てくるメニューの中にある「位置情報」を使って送ってにゃん。")
 		break
 	case postback_beer_search:
 		message = linebot.NewTextMessage("探したい場所を10分以内に教えてにゃん")

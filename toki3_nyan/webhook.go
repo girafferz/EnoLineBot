@@ -2,7 +2,6 @@ package main
 
 import (
 	"github.com/line/line-bot-sdk-go/linebot"
-	"time"
 	"google.golang.org/appengine"
 	"net/http"
 	"google.golang.org/appengine/taskqueue"
@@ -148,54 +147,3 @@ func onReceiveUnFollow(bot *linebot.Client, context context.Context, event *line
 		return
 	}
 }
-
-func getId(source *linebot.EventSource) string {
-	if source.Type == linebot.EventSourceTypeRoom {
-		return source.RoomID;
-	} else if source.Type == linebot.EventSourceTypeGroup {
-		return source.GroupID;
-	}
-
-	return source.UserID;
-}
-
-func onReceiveMessage(bot *linebot.Client, context context.Context, event *linebot.Event) {
-	message := getMessageResponse(event)
-	if (message == nil) {
-		return
-	}
-
-	if _, err := bot.ReplyMessage(event.ReplyToken, message).WithContext(context).Do(); err != nil {
-		log.Errorf(context, "ReplayMessage: %v", err)
-		return
-	}
-}
-
-func getMessageResponse(event *linebot.Event) linebot.Message {
-	switch message := event.Message.(type) {
-	case *linebot.TextMessage:
-		return getTextMessageResponse(message.Text)
-	case *linebot.ImageMessage:
-		return linebot.NewTextMessage("画像だにゃん")
-	case *linebot.StickerMessage:
-		return linebot.NewTextMessage("スタンプだにゃん")
-	default:
-		return nil
-	}
-
-}
-
-func getTextMessageResponse(text string) linebot.Message {
-	switch text {
-	case "はらへ":
-		return linebot.NewTemplateMessage("search_meal", buildPostbackMealSearchTemplate())
-	case "今の時間をおしえて！":
-		t := time.Now().In(time.FixedZone("Asia/Tokyo", 9 * 60 * 60))
-		return linebot.NewTextMessage(t.Format(time.Kitchen))
-	case "あ":
-		return linebot.NewTemplateMessage("ていれいほうこく", buildPostbackTodayReflectionTemplate())
-	default:
-		return linebot.NewTextMessage("理解できない言葉だにゃん＞＜")
-	}
-}
-

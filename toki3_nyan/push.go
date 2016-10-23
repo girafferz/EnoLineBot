@@ -36,7 +36,14 @@ func PushCron(w http.ResponseWriter, r *http.Request) {
 	}
 
 	//全員に送信
-	message := linebot.NewTextMessage("あと30分できょうがおわるにゃん。きょうはいい日だったかにゃん？")
+	template := linebot.NewButtonsTemplate(
+		"",
+		"",
+		"もうすぐきょうがおわるにゃん。きょうはいい日だったかにゃん？",
+		linebot.NewPostbackTemplateAction("さいこう！", "today_good", ""),
+		linebot.NewPostbackTemplateAction("ぼちぼち", "today_normal", ""),
+		linebot.NewPostbackTemplateAction("だめだめ", "today_bad", ""))
+	message := linebot.NewTemplateMessage("template", template)
 
 	for _, current := range subscribers {
 		if _, err := bot.PushMessage(current.ID, message).WithContext(context).Do(); err != nil {

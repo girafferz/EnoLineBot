@@ -168,6 +168,9 @@ func getId(source *linebot.EventSource) string {
 
 func onReceiveMessage(bot *linebot.Client, context context.Context, event *linebot.Event) {
 	message := getMessageResponse(event)
+	if (message == nil) {
+		return
+	}
 
 	if _, err := bot.ReplyMessage(event.ReplyToken, message).WithContext(context).Do(); err != nil {
 		log.Errorf(context, "ReplayMessage: %v", err)
@@ -184,7 +187,7 @@ func getMessageResponse(event *linebot.Event) linebot.Message {
 	case *linebot.StickerMessage:
 		return linebot.NewTextMessage("スタンプだにゃん")
 	default:
-		return linebot.NewTextMessage("良くわかんないにゃん")
+		return nil
 	}
 
 }
@@ -200,6 +203,15 @@ func getTextMessageResponse(text string) linebot.Message {
 	case "今の時間をおしえて！":
 		t := time.Now().In(time.FixedZone("Asia/Tokyo", 9 * 60 * 60))
 		return linebot.NewTextMessage(t.Format(time.Kitchen))
+	case "あ":
+		template := linebot.NewButtonsTemplate(
+			"",
+			"",
+			"もうすぐきょうがおわるにゃん。きょうはいい日だったかにゃん？",
+			linebot.NewPostbackTemplateAction("さいこう！", "today_good", ""),
+			linebot.NewPostbackTemplateAction("ぼちぼち", "today_normal", ""),
+			linebot.NewPostbackTemplateAction("だめだめ", "today_bad", ""))
+		return linebot.NewTemplateMessage("ていれいほうこく", template)
 	default:
 		return linebot.NewTextMessage("理解できない言葉だにゃん＞＜")
 	}
@@ -213,6 +225,12 @@ func onReceivePostBack(data string, bot *linebot.Client, replyToken string, cont
 		message = linebot.NewTextMessage("らーめん探すにゃん")
 	case "beer":
 		message = linebot.NewTextMessage("ビール探すにゃん")
+	case "today_good":
+		message = linebot.NewTextMessage("それはよかったにゃん。このちょうしだにゃん")
+	case "today_normal":
+		message = linebot.NewTextMessage("いつもどおりの日常がじつは大切なんだにゃん")
+	case "today_bad":
+		message = linebot.NewTextMessage("きょうはビール飲んで早く寝るんだにゃん")
 	default:
 		message = linebot.NewTextMessage("良くわかんないにゃん")
 	}

@@ -106,7 +106,7 @@ func handleEvent(bot *linebot.Client, context context.Context, event *linebot.Ev
 		// 部屋から離れた
 		break
 	case linebot.EventTypePostback:
-		onReceivePostBack(event.Postback.Data, bot, event.ReplyToken, context)
+		onReceivePostBack(event, bot, context)
 		break
 	case linebot.EventTypeMessage:
 		onReceiveMessage(bot, context, event)
@@ -115,24 +115,17 @@ func handleEvent(bot *linebot.Client, context context.Context, event *linebot.Ev
 }
 
 func onReceiveFollow(bot *linebot.Client, context context.Context, event *linebot.Event) {
-	senderProfile, err := bot.GetProfile(getId(event.Source)).Do()
+	profile, err := bot.GetProfile(getId(event.Source)).Do()
 	if err != nil {
 		log.Errorf(context, "Error occurred at get sender profile. err: %v", err)
 		return
 	}
 
-	entity := subscriber{
-		DisplayName: senderProfile.DisplayName,
-		ID: senderProfile.UserID,
-	}
-
-	key := datastore.NewKey(context, subscriber_key, senderProfile.UserID, 0, nil)
-	if _, err := datastore.Put(context, key, &entity); err != nil {
-		log.Errorf(context, "Error occurred at put subcriber to datastore. err: %v", err)
+	if err := updateSubscriber(context, profile, action_follow); err != nil {
 		return
 	}
 
-	text := fmt.Sprintf("よろしくだにゃん、げぼく「%s」", senderProfile.DisplayName)
+	text := fmt.Sprintf("よろしくだにゃん、げぼく「%s」", profile.DisplayName)
 	message := linebot.NewTextMessage(text)
 
 	if _, err := bot.ReplyMessage(event.ReplyToken, message).WithContext(context).Do(); err != nil {
@@ -195,48 +188,14 @@ func getMessageResponse(event *linebot.Event) linebot.Message {
 func getTextMessageResponse(text string) linebot.Message {
 	switch text {
 	case "はらへ":
-		template := linebot.NewConfirmTemplate(
-			"なにがたべたいにゃん",
-			linebot.NewPostbackTemplateAction("らーめん", "ramen", ""),
-			linebot.NewPostbackTemplateAction("びーる", "beer", ""))
-		return linebot.NewTemplateMessage("らーめん種類選択", template)
+		return linebot.NewTemplateMessage("search_meal", buildPostbackMealSearchTemplate())
 	case "今の時間をおしえて！":
 		t := time.Now().In(time.FixedZone("Asia/Tokyo", 9 * 60 * 60))
 		return linebot.NewTextMessage(t.Format(time.Kitchen))
 	case "あ":
-		template := linebot.NewButtonsTemplate(
-			"",
-			"",
-			"もうすぐきょうがおわるにゃん。きょうはいい日だったかにゃん？",
-			linebot.NewPostbackTemplateAction("さいこう！", "today_good", ""),
-			linebot.NewPostbackTemplateAction("ぼちぼち", "today_normal", ""),
-			linebot.NewPostbackTemplateAction("だめだめ", "today_bad", ""))
-		return linebot.NewTemplateMessage("ていれいほうこく", template)
+		return linebot.NewTemplateMessage("ていれいほうこく", buildPostbackTodayReflectionTemplate())
 	default:
 		return linebot.NewTextMessage("理解できない言葉だにゃん＞＜")
 	}
 }
 
-func onReceivePostBack(data string, bot *linebot.Client, replyToken string, context context.Context) {
-	var message linebot.Message
-
-	switch data {
-	case "ramen":
-		message = linebot.NewTextMessage("らーめん探すにゃん")
-	case "beer":
-		message = linebot.NewTextMessage("ビール探すにゃん")
-	case "today_good":
-		message = linebot.NewTextMessage("それはよかったにゃん。このちょうしだにゃん")
-	case "today_normal":
-		message = linebot.NewTextMessage("いつもどおりの日常がじつは大切なんだにゃん")
-	case "today_bad":
-		message = linebot.NewTextMessage("きょうはビール飲んで早く寝るんだにゃん")
-	default:
-		message = linebot.NewTextMessage("良くわかんないにゃん")
-	}
-
-	if _, err := bot.ReplyMessage(replyToken, message).WithContext(context).Do(); err != nil {
-		log.Errorf(context, "ReplayMessage: %v", err)
-		return
-	}
-}

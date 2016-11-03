@@ -5,6 +5,7 @@ import (
 	"time"
 	"golang.org/x/net/context"
 	"google.golang.org/appengine/log"
+	"fmt"
 )
 
 func onReceiveMessage(bot *linebot.Client, context context.Context, event *linebot.Event) {
@@ -82,7 +83,13 @@ func onReceiveLocationAction(bot *linebot.Client, context context.Context, event
 
 	switch action {
 	case action_search_ramen:
-		reply = linebot.NewTextMessage("「" + message.Address + "」でらーめんを探すにゃん")
+		responses := requestLocalSearchRamen(context, message.Latitude, message.Longitude)
+		if (responses == nil) {
+			reply = linebot.NewTextMessage("らーめんが見つからなかったにゃん")
+		} else {
+			log.Infof(context, "local search response: %v", responses)
+			reply = linebot.NewTextMessage(fmt.Sprintf("お店が%d件みつかったにゃん", len(responses)))
+		}
 		break
 	case action_search_beer:
 		reply = linebot.NewTextMessage("「" + message.Address + "」でビールを探すにゃん")

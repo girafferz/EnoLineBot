@@ -55,6 +55,7 @@ handlers:
 $ cat demo/line.env
 LINE_BOT_CHANNEL_SECRET=(line bot channnel secret)
 LINE_BOT_CHANNEL_TOKEN=(line bot channel token)
+YAHOO_APPID=(yahoo developers application id)
 ```
 
 # deoloy

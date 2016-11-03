@@ -67,6 +67,7 @@ func buildRequest(context context.Context, gc string, lat float64, lon float64) 
 	q.Add("lon", strconv.FormatFloat(lon, 'f', 12, 64))
 	q.Add("dist", "1")
 	q.Add("sort", "hybrid")
+	q.Add("group", "gid")
 
 	request.URL.RawQuery = q.Encode()
 

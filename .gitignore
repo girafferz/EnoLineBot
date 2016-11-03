@@ -3,3 +3,5 @@
 pkg
 app.yaml
 *.env
+src
+*.swp

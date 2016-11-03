@@ -96,7 +96,7 @@ func onReceiveLocationAction(bot *linebot.Client, context context.Context, event
 	case action_search_beer:
 		responses := requestLocalSearchBeer(context, message.Latitude, message.Longitude)
 		if responses == nil || len(responses) < 1 {
-			reply = linebot.NewTextMessage("らーめんが見つからなかったにゃん")
+			reply = linebot.NewTextMessage("ビールが見つからなかったにゃん")
 		} else {
 			reply = linebot.NewTemplateMessage(
 				fmt.Sprintf("お店が%d件みつかったにゃん", len(responses)),

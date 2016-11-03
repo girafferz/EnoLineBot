@@ -20,12 +20,25 @@ type LocalSearchResponse struct {
 	leadImage string
 }
 
+func requestLocalSearchBeer(context context.Context, lat float64, lon float64) []LocalSearchResponse {
+	request := buildRequest(context, "0110005", lat, lon)
+	if request == nil {
+		return nil
+	}
+
+	return requestLocalSearch(context, request)
+}
+
 func requestLocalSearchRamen(context context.Context, lat float64, lon float64) []LocalSearchResponse {
 	request := buildRequest(context, "0106", lat, lon)
 	if request == nil {
 		return nil
 	}
 
+	return requestLocalSearch(context, request)
+}
+
+func requestLocalSearch(context context.Context, request *http.Request) []LocalSearchResponse {
 	client := urlfetch.Client(context)
 	client.Timeout = time.Duration(5) * time.Second
 

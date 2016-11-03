@@ -122,8 +122,19 @@ func getLocationMessage(message linebot.Message) (*linebot.LocationMessage) {
 }
 
 func buildCarouselTemplate(responses []LocalSearchResponse) *linebot.CarouselTemplate {
+	len := len(responses)
+
+	if len < 1 {
+		return nil
+	}
+
 	var cc []*linebot.CarouselColumn
-	for i := 0; i < 4; i++ {
+	for i := 0; i < len; i++ {
+		if len > 4 {
+			// カルーセルは5件上限
+			break
+		}
+
 		cc = append(cc, buildCarouselColumn(responses[i]))
 	}
 	return linebot.NewCarouselTemplate(cc...);

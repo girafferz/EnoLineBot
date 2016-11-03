@@ -114,38 +114,11 @@ func getLocationMessage(message linebot.Message) (*linebot.LocationMessage) {
 }
 
 func buildCarouselTemplate(responses []LocalSearchResponse) *linebot.CarouselTemplate {
-	responsesSize := len(responses)
-	if responsesSize > 4 {
-		return linebot.NewCarouselTemplate(
-			buildCarouselColumn(responses[0]),
-			buildCarouselColumn(responses[1]),
-			buildCarouselColumn(responses[2]),
-			buildCarouselColumn(responses[3]),
-			buildCarouselColumn(responses[4]),
-		);
-	} else if responsesSize == 4 {
-		return linebot.NewCarouselTemplate(
-			buildCarouselColumn(responses[0]),
-			buildCarouselColumn(responses[1]),
-			buildCarouselColumn(responses[2]),
-			buildCarouselColumn(responses[3]),
-		);
-	} else if responsesSize == 3 {
-		return linebot.NewCarouselTemplate(
-			buildCarouselColumn(responses[0]),
-			buildCarouselColumn(responses[1]),
-			buildCarouselColumn(responses[2]),
-		);
-	} else if responsesSize == 2 {
-		return linebot.NewCarouselTemplate(
-			buildCarouselColumn(responses[0]),
-			buildCarouselColumn(responses[1]),
-		);
-	} else {
-		return linebot.NewCarouselTemplate(
-			buildCarouselColumn(responses[0]),
-		);
+	var cc []*linebot.CarouselColumn
+	for i := 0; i < 4; i++ {
+		cc = append(cc, buildCarouselColumn(responses[i]))
 	}
+	return linebot.NewCarouselTemplate(cc...);
 }
 
 func buildCarouselColumn(response LocalSearchResponse) *linebot.CarouselColumn {

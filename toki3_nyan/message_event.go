@@ -40,7 +40,7 @@ func onReceiveMessage(bot *linebot.Client, context context.Context, event *lineb
 func getTextMessageResponse(text string) linebot.Message {
 	switch text {
 	case "はらへ":
-		return linebot.NewTemplateMessage("search_meal", buildPostbackMealSearchTemplate())
+		return linebot.NewTemplateMessage("ごはんさがすにゃん", buildPostbackMealSearchTemplate())
 	case "今の時間をおしえて！":
 		t := time.Now().In(time.FixedZone("Asia/Tokyo", 9 * 60 * 60))
 		return linebot.NewTextMessage(t.Format(time.Kitchen))

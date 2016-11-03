@@ -27,9 +27,9 @@ func buildPostbackTodayReflectionTemplate() (*linebot.ButtonsTemplate) {
 		"",
 		"",
 		"もうすぐきょうがおわるにゃん。きょうはいい日だったかにゃん？",
-		linebot.NewPostbackTemplateAction("さいこう！", "today_good", ""),
-		linebot.NewPostbackTemplateAction("ぼちぼち", "today_normal", ""),
-		linebot.NewPostbackTemplateAction("だめだめ", "today_bad", ""))
+		linebot.NewPostbackTemplateAction("さいこう！", postback_today_good, ""),
+		linebot.NewPostbackTemplateAction("ぼちぼち", postback_today_normal, ""),
+		linebot.NewPostbackTemplateAction("だめだめ", postback_today_bad, ""))
 }
 
 func onReceivePostBack(event *linebot.Event, bot *linebot.Client, context context.Context) {

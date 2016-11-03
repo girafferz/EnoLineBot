@@ -94,7 +94,15 @@ func onReceiveLocationAction(bot *linebot.Client, context context.Context, event
 		}
 		break
 	case action_search_beer:
-		reply = linebot.NewTextMessage("「" + message.Address + "」でビールを探すにゃん")
+		responses := requestLocalSearchBeer(context, message.Latitude, message.Longitude)
+		if responses == nil || len(responses) < 1 {
+			reply = linebot.NewTextMessage("らーめんが見つからなかったにゃん")
+		} else {
+			reply = linebot.NewTemplateMessage(
+				fmt.Sprintf("お店が%d件みつかったにゃん", len(responses)),
+				buildCarouselTemplate(responses),
+			)
+		}
 		break
 	}
 

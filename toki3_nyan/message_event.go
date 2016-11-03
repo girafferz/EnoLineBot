@@ -82,6 +82,7 @@ func onReceiveLocationAction(bot *linebot.Client, context context.Context, event
 
 	switch action {
 	case action_search_ramen:
+		requestLocalSearchRamen(context, message.Latitude, message.Longitude)
 		reply = linebot.NewTextMessage("「" + message.Address + "」でらーめんを探すにゃん")
 		break
 	case action_search_beer:

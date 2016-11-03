@@ -5,6 +5,7 @@ import (
 	"time"
 	"golang.org/x/net/context"
 	"google.golang.org/appengine/log"
+	"fmt"
 )
 
 func onReceiveMessage(bot *linebot.Client, context context.Context, event *linebot.Event) {
@@ -82,7 +83,15 @@ func onReceiveLocationAction(bot *linebot.Client, context context.Context, event
 
 	switch action {
 	case action_search_ramen:
-		reply = linebot.NewTextMessage("「" + message.Address + "」でらーめんを探すにゃん")
+		responses := requestLocalSearchRamen(context, message.Latitude, message.Longitude)
+		if responses == nil || len(responses) < 1 {
+			reply = linebot.NewTextMessage("らーめんが見つからなかったにゃん")
+		} else {
+			reply = linebot.NewTemplateMessage(
+				fmt.Sprintf("お店が%d件みつかったにゃん", len(responses)),
+				buildCarouselTemplate(responses),
+			)
+		}
 		break
 	case action_search_beer:
 		reply = linebot.NewTextMessage("「" + message.Address + "」でビールを探すにゃん")
@@ -102,4 +111,48 @@ func getLocationMessage(message linebot.Message) (*linebot.LocationMessage) {
 	default:
 		return nil
 	}
+}
+
+func buildCarouselTemplate(responses []LocalSearchResponse) *linebot.CarouselTemplate {
+	responsesSize := len(responses)
+	if responsesSize > 4 {
+		return linebot.NewCarouselTemplate(
+			buildCarouselColumn(responses[0]),
+			buildCarouselColumn(responses[1]),
+			buildCarouselColumn(responses[2]),
+			buildCarouselColumn(responses[3]),
+			buildCarouselColumn(responses[4]),
+		);
+	} else if responsesSize == 4 {
+		return linebot.NewCarouselTemplate(
+			buildCarouselColumn(responses[0]),
+			buildCarouselColumn(responses[1]),
+			buildCarouselColumn(responses[2]),
+			buildCarouselColumn(responses[3]),
+		);
+	} else if responsesSize == 3 {
+		return linebot.NewCarouselTemplate(
+			buildCarouselColumn(responses[0]),
+			buildCarouselColumn(responses[1]),
+			buildCarouselColumn(responses[2]),
+		);
+	} else if responsesSize == 2 {
+		return linebot.NewCarouselTemplate(
+			buildCarouselColumn(responses[0]),
+			buildCarouselColumn(responses[1]),
+		);
+	} else {
+		return linebot.NewCarouselTemplate(
+			buildCarouselColumn(responses[0]),
+		);
+	}
+}
+
+func buildCarouselColumn(response LocalSearchResponse) *linebot.CarouselColumn {
+	return linebot.NewCarouselColumn(
+		"",
+		response.name,
+		response.address,
+		linebot.NewURITemplateAction("ページを見る", response.linkUrl),
+	)
 }

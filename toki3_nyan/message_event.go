@@ -47,8 +47,32 @@ func getTextMessageResponse(text string) linebot.Message {
 		return linebot.NewTextMessage(t.Format(time.Kitchen))
 	case "あ":
 		return linebot.NewTemplateMessage("ていれいほうこく", buildPostbackTodayReflectionTemplate())
+	case "天気":
+		return linebot.NewTextMessage("天気にゃん http://weather.yahoo.co.jp/weather/")
+	case "ニュース":
+		str := `ニュースにゃん
+http://bit.ly/2fgqvkD
+http://bit.ly/2es6HJP
+http://tcrn.ch/2eiuIzK`
+		return linebot.NewTextMessage(str)
+	case "動画":
+		return linebot.NewTextMessage("動画にゃん http://bit.ly/2flJcQ3")
+	case "画像":
+		return linebot.NewTextMessage("画像にゃん http://bit.ly/2fgCax9")
+	case "なう":
+		return linebot.NewTextMessage("なうにゃん http://bit.ly/2flKpab")
+	case "ヘルプ":
+		str := `はらへ
+今の時間をおしえて！
+天気
+ニュース
+動画
+画像
+なう
+と聞くにゃん`
+		return linebot.NewTextMessage(str)
 	default:
-		return linebot.NewTextMessage("理解できない言葉だにゃん＞＜")
+		return linebot.NewTextMessage("理解できない言葉だにゃん＞＜ 「ヘルプ」と聞くにゃん")
 	}
 }
 

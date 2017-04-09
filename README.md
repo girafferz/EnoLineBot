@@ -17,6 +17,19 @@ $ go get -u google.golang.org/appengine
 # files
 
 ```
+$ ls -1
+.idea/
+./
+../
+.DS_Store
+.git/
+EnoLineBot.iml
+toki3_nyan/
+src/ # go dependencies
+pkg/ # go dependencies
+.gitignore
+README.md
+
 $ tree toki3_nyan/
 toki3_nyan/
 ├── app.go
